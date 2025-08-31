@@ -1,0 +1,24 @@
+{
+  "categories": [
+    {
+      "slug": "weddings",
+      "title": "Weddings",
+      "description": "Ceremony audio, cocktail vibes, and reception party sets."
+    },
+    {
+      "slug": "corporate",
+      "title": "Corporate Parties",
+      "description": "Professional sound for launches, galas, and team offsites."
+    },
+    {
+      "slug": "photo-booth",
+      "title": "Photo Booth",
+      "description": "Instant prints and digital galleries with branded overlays."
+    },
+    {
+      "slug": "sports",
+      "title": "Sports",
+      "description": "Player intros, halftime shows, and energy for the arena."
+    }
+  ]
+}
