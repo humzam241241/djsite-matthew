@@ -3,9 +3,29 @@
 @tailwind utilities;
 
 :root { color-scheme: light; }
+html { scroll-behavior: smooth; }
 body { @apply bg-white text-gray-900 font-body; }
 .container { @apply max-w-6xl mx-auto px-4; }
-.navlink { @apply px-3 py-2 rounded-lg hover:bg-brand.light transition; }
-.active { @apply bg-brand.light; }
-.btn { @apply inline-block bg-brand.primary text-white px-5 py-3 rounded-xl font-medium hover:opacity-90; }
+.navlink { @apply px-3 py-2 rounded-lg hover:bg-brand-light transition; }
+.active { @apply bg-brand-light; }
+.btn { @apply inline-block bg-brand-primary text-white px-5 py-3 rounded-xl font-medium hover:opacity-90; }
 .card { @apply rounded-2xl shadow-lg p-6 bg-white; }
+
+/* Section styling */
+section {
+  @apply min-h-[80vh] flex items-center;
+  scroll-margin-top: 4rem;
+}
+
+/* Scroll indicator */
+.scroll-indicator {
+  @apply fixed right-4 top-1/2 -translate-y-1/2 flex flex-col gap-2 z-20;
+}
+
+.scroll-indicator-dot {
+  @apply w-3 h-3 rounded-full bg-gray-300 transition-all duration-300;
+}
+
+.scroll-indicator-dot.active {
+  @apply bg-brand-primary w-4 h-4;
+}

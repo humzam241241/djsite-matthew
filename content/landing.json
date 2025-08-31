@@ -1,0 +1,39 @@
+{
+  "hero": {
+    "title": "Bring Your Event To Life",
+    "subtitle": "Weddings, corporate events, photo booths, and more — curated sound and unforgettable vibes.",
+    "primaryButtonText": "Get a Quote",
+    "primaryButtonLink": "#contact",
+    "secondaryButtonText": "QR Code",
+    "secondaryButtonLink": "/qr.png",
+    "mediaItems": [
+      {
+        "type": "image",
+        "src": "/qr.png",
+        "alt": "QR linking to homepage"
+      }
+    ]
+  },
+  "sections": {
+    "services": {
+      "title": "Services",
+      "description": "We offer a range of professional DJ services for various events. Contact us for custom packages."
+    },
+    "testimonials": {
+      "title": "Testimonials",
+      "description": "Don't just take our word for it. Here's what our clients have to say about our services."
+    },
+    "gallery": {
+      "title": "Gallery",
+      "description": "Browse through photos from our past events and performances."
+    },
+    "about": {
+      "title": "About Sound Vibe",
+      "description": "Learn more about our team and our approach to creating memorable events."
+    },
+    "contact": {
+      "title": "Contact Us",
+      "description": "Get in touch with us to book your event or request more information."
+    }
+  }
+}

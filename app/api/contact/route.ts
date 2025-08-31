@@ -1,23 +1,23 @@
-import { NextResponse } from "next/server";
-import { z } from "zod";
+import { NextRequest, NextResponse } from "next/server";
 
-const ContactSchema = z.object({
-  name: z.string().min(2),
-  email: z.string().email(),
-  message: z.string().min(10)
-});
-
-export async function POST(request: Request) {
+export async function POST(request: NextRequest) {
   try {
     const body = await request.json();
-    const parsed = ContactSchema.parse(body);
-
-    // In real deployment: send via Resend/SendGrid/SES using env vars.
-    // Here, we log to console to prove functionality without secrets.
-    console.log("CONTACT_SUBMISSION", parsed);
-
+    const { name, email, message } = body;
+    
+    // Validate the data
+    if (!name || !email || !message) {
+      return NextResponse.json({ error: "Missing required fields" }, { status: 400 });
+    }
+    
+    // In a real application, you would send an email here
+    // For example, using a service like SendGrid, Mailgun, etc.
+    console.log("Contact form submission:", { name, email, message });
+    
+    // For demo purposes, we'll just return a success response
     return NextResponse.json({ ok: true });
-  } catch (err: any) {
-    return NextResponse.json({ ok: false, error: err.message || "Invalid payload" }, { status: 400 });
+  } catch (error) {
+    console.error("Error processing contact form:", error);
+    return NextResponse.json({ error: "Failed to process request" }, { status: 500 });
   }
 }

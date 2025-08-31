@@ -2,7 +2,7 @@
 
 import { useState } from "react";
 
-export default function ContactPage() {
+export default function ContactForm() {
   const [status, setStatus] = useState<null | string>(null);
 
   async function onSubmit(e: React.FormEvent<HTMLFormElement>) {
@@ -18,16 +18,26 @@ export default function ContactPage() {
       email: formElements.email.value,
       message: formElements.message.value
     };
+    
     setStatus("Sending...");
-    const res = await fetch("/api/contact", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify(data) });
-    const json = await res.json();
-    setStatus(json.ok ? "Sent! Check your inbox." : json.error || "Failed to send");
-    form.reset();
+    
+    try {
+      const res = await fetch("/api/contact", { 
+        method: "POST", 
+        headers: { "Content-Type": "application/json" }, 
+        body: JSON.stringify(data) 
+      });
+      
+      const json = await res.json();
+      setStatus(json.ok ? "Sent! Check your inbox." : json.error || "Failed to send");
+      form.reset();
+    } catch (error) {
+      setStatus("Failed to send. Please try again later.");
+    }
   }
 
   return (
     <div className="max-w-xl">
-      <h1 className="text-3xl font-bold mb-4">Contact Us</h1>
       <form className="space-y-4" onSubmit={onSubmit}>
         <input name="name" placeholder="Your name" className="w-full border rounded-lg p-3" required />
         <input name="email" type="email" placeholder="you@example.com" className="w-full border rounded-lg p-3" required />
@@ -38,3 +48,4 @@ export default function ContactPage() {
     </div>
   );
 }
+
