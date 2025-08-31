@@ -1,0 +1,17 @@
+node_modules/
+.next/
+dist/
+out/
+coverage/
+playwright-report/
+test-results/
+*.log
+*_log.txt
+*error*.log
+*error*.txt
+.env*
+!.env.example
+.DS_Store
+Thumbs.db
+.vscode/
+.idea/
