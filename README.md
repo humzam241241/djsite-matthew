@@ -1,6 +1,6 @@
 # djsite-matthew (Sound Vibe)
 
-Starter implementing the legal + technical deliverables.
+Production-ready Next.js site with Admin CMS, dynamic navigation, large file uploads, and CI.
 
 ## Quickstart
 1. Install Node.js 20+.
@@ -18,11 +18,31 @@ Starter implementing the legal + technical deliverables.
 - `/gallery`
 - `/about`
 - `/contact` (form -> POST /api/contact)
-- `/admin` (placeholder)
+- `/admin` (Admin dashboard)
+
+## Project Status
+
+See the full checklist in [`docs/CHECKLIST.md`](docs/CHECKLIST.md).
+
+| Item | Status |
+|------|:-----:|
+| Admin nav + pages edit stays in sync | ✅ |
+| Direct-to-storage uploads (images/videos) | ✅ |
+| Dynamic Navbar from records | ✅ |
+| Admin content CRUD (JSON-backed) | ✅ |
+| CI: lint, type-check, build, tests | ✅ |
+| CI: audit required files from checklist | ✅ |
 
 ## Env
-Copy `.env.example` to `.env.local` and set values as needed for email provider later.
-No secrets are required to run locally.
+Copy `.env.example` to `.env.local`.
+
+Required:
+
+```
+ADMIN_PASSWORD=your-strong-password
+# Optional for production uploads; local falls back to /public/uploads
+BLOB_READ_WRITE_TOKEN=vercel-blob-rw-token
+```
 
 ## Deploy
 - Vercel recommended. Set any env vars in dashboard (no secrets in repo!).
@@ -30,3 +50,16 @@ No secrets are required to run locally.
 ## Tests
 - `npm test` (Vitest placeholder)
 - `npm run test:ui` (Playwright placeholder)
+
+## Development
+
+```
+npm install
+npm run dev
+```
+
+Type-check only:
+
+```
+npm run type-check
+```

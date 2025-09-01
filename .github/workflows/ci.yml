@@ -16,6 +16,16 @@ jobs:
           node-version: 20
           cache: "npm"
       - run: npm ci
+      - run: npm run type-check --if-present
       - run: npm run lint
       - run: npm run build
       - run: npm test --if-present
+      - name: Audit required files from checklist
+        run: |
+          grep -q "Master Checklist" docs/CHECKLIST.md
+          test -f README.md
+          test -f app/api/pages/route.ts
+          test -f app/api/pages/[id]/route.ts
+          test -f app/components/DynamicNavigation.tsx
+          test -f app/admin/page.tsx
+          test -f app/api/upload/route.ts
