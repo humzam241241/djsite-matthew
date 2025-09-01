@@ -6,13 +6,7 @@
     "primaryButtonLink": "#contact",
     "secondaryButtonText": "QR Code",
     "secondaryButtonLink": "/qr.png",
-    "mediaItems": [
-      {
-        "type": "image",
-        "src": "/qr.png",
-        "alt": "QR linking to homepage"
-      }
-    ]
+    "mediaItems": []
   },
   "sections": {
     "services": {

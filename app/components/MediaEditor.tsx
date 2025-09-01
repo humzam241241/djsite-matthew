@@ -22,9 +22,13 @@ export default function MediaEditor({
   const [newItemSrc, setNewItemSrc] = useState("");
   const [newItemAlt, setNewItemAlt] = useState("");
   const [showPreview, setShowPreview] = useState(false);
+  const [uploadError, setUploadError] = useState<string | null>(null);
 
   function addItem() {
-    if (!newItemSrc) return;
+    if (!newItemSrc) {
+      setUploadError("Please provide a source URL for the media item");
+      return;
+    }
     
     const newItem: MediaItem = {
       type: newItemType,
@@ -37,6 +41,8 @@ export default function MediaEditor({
     // Reset form
     setNewItemSrc("");
     setNewItemAlt("");
+    setUploadError(null);
+    setShowPreview(false);
   }
   
   function removeItem(index: number) {
@@ -171,6 +177,7 @@ export default function MediaEditor({
                 if (!newItemAlt && fileData.name) {
                   setNewItemAlt(fileData.name.split('.')[0]);
                 }
+                setUploadError(null);
               }}
             />
           </div>
@@ -185,7 +192,10 @@ export default function MediaEditor({
                 <input
                   type="text"
                   value={newItemSrc}
-                  onChange={(e) => setNewItemSrc(e.target.value)}
+                  onChange={(e) => {
+                    setNewItemSrc(e.target.value);
+                    setUploadError(null);
+                  }}
                   placeholder={newItemType === "image" ? "/images/example.jpg" : "/videos/example.mp4"}
                   className="w-full border rounded-lg p-2 mt-1"
                 />
@@ -210,6 +220,12 @@ export default function MediaEditor({
               />
             </div>
           </div>
+          
+          {uploadError && (
+            <div className="text-sm text-red-600 bg-red-50 p-2 rounded">
+              {uploadError}
+            </div>
+          )}
           
           <div className="flex gap-3">
             {newItemSrc && (
@@ -250,7 +266,7 @@ export default function MediaEditor({
                     controls
                     className="max-h-64 max-w-full"
                     onError={() => {
-                      alert("Error loading video. Please check the URL.");
+                      setUploadError("Error loading video. Please check the URL.");
                       setShowPreview(false);
                     }}
                   >

@@ -17,10 +17,19 @@ export default function FileUpload({
   const [uploadProgress, setUploadProgress] = useState(0);
   const [error, setError] = useState<string | null>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
+  const progressIntervalRef = useRef<NodeJS.Timeout | null>(null);
 
   const acceptedTypes = {
     image: "image/jpeg, image/png, image/gif, image/webp",
     video: "video/mp4, video/webm"
+  };
+
+  // Clean up interval on unmount
+  const cleanupInterval = () => {
+    if (progressIntervalRef.current) {
+      clearInterval(progressIntervalRef.current);
+      progressIntervalRef.current = null;
+    }
   };
 
   async function handleFileChange(e: React.ChangeEvent<HTMLInputElement>) {
@@ -30,6 +39,14 @@ export default function FileUpload({
     setIsUploading(true);
     setError(null);
     setUploadProgress(0);
+    cleanupInterval();
+
+    // Log file information
+    console.log("Selected file:", {
+      name: file.name,
+      type: file.type,
+      size: file.size
+    });
 
     try {
       // Create form data
@@ -37,40 +54,62 @@ export default function FileUpload({
       formData.append("file", file);
       formData.append("type", fileType);
 
-      // Simulate upload progress
-      const progressInterval = setInterval(() => {
+      // Start progress simulation - slower and more realistic
+      progressIntervalRef.current = setInterval(() => {
         setUploadProgress(prev => {
-          const newProgress = prev + Math.random() * 10;
+          // Slower progress that stops at 90%
+          const increment = Math.random() * 5; // Smaller increments
+          const newProgress = prev + increment;
           return newProgress > 90 ? 90 : newProgress;
         });
-      }, 200);
+      }, 300);
 
+      console.log("Starting upload...");
+      
       // Upload file
       const response = await fetch("/api/upload", {
         method: "POST",
         body: formData,
       });
-
-      clearInterval(progressInterval);
-
+      
+      // Clean up interval
+      cleanupInterval();
+      
+      console.log("Upload response status:", response.status);
+      
+      const responseData = await response.json();
+      console.log("Upload response data:", responseData);
+      
       if (!response.ok) {
-        const errorData = await response.json();
-        throw new Error(errorData.error || "Failed to upload file");
+        throw new Error(responseData.error || responseData.details || "Failed to upload file");
       }
 
+      // Complete the progress bar
       setUploadProgress(100);
+      console.log("Upload successful:", responseData.file);
       
-      const data = await response.json();
-      onUploadComplete(data.file);
+      // Short delay before calling the completion handler
+      setTimeout(() => {
+        onUploadComplete(responseData.file);
+        
+        // Reset file input
+        if (fileInputRef.current) {
+          fileInputRef.current.value = "";
+        }
+      }, 500);
       
-      // Reset file input
-      if (fileInputRef.current) {
-        fileInputRef.current.value = "";
-      }
     } catch (err: any) {
+      console.error("Upload error:", err);
       setError(err.message || "Failed to upload file");
+      setUploadProgress(0);
     } finally {
-      setIsUploading(false);
+      cleanupInterval();
+      // Keep isUploading true for a moment if successful to show 100%
+      if (uploadProgress === 100) {
+        setTimeout(() => setIsUploading(false), 500);
+      } else {
+        setIsUploading(false);
+      }
     }
   }
 
@@ -119,9 +158,10 @@ export default function FileUpload({
       )}
 
       {error && (
-        <p className="text-sm text-red-600">{error}</p>
+        <div className="text-sm text-red-600 bg-red-50 p-2 rounded border border-red-100">
+          Error: {error}
+        </div>
       )}
     </div>
   );
 }
-

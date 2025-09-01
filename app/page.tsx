@@ -8,27 +8,33 @@ import landing from "../content/landing.json";
 import pages from "../content/pages.json";
 import ContactForm from "./components/ContactForm";
 import MediaGallery, { MediaItem } from "./components/MediaGallery";
+import HeroMediaGallery from "./components/HeroMediaGallery";
 
 export default function HomePage() {
   return (
     <div className="space-y-20">
       {/* Hero Section */}
-      <section id="home" className="grid md:grid-cols-2 gap-8 items-center min-h-[70vh] py-10 relative">
-        <div className="space-y-4">
-          <h1 className="text-4xl md:text-5xl font-display font-bold">{landing.hero.title}</h1>
-          <p className="text-lg text-gray-700">
-            {landing.hero.subtitle}
-          </p>
-          <div className="flex gap-3">
-            <Link href={landing.hero.primaryButtonLink} className="btn">{landing.hero.primaryButtonText}</Link>
-            <a href={landing.hero.secondaryButtonLink} className="navlink">{landing.hero.secondaryButtonText}</a>
+      <section id="home" className="min-h-[80vh] relative flex items-center">
+        {/* Background Media Gallery */}
+        <HeroMediaGallery items={(landing.hero.mediaItems as MediaItem[]) || []} />
+        
+        {/* Content overlay */}
+        <div className="container mx-auto px-4 py-20 relative z-10">
+          <div className="max-w-xl text-white">
+            <h1 className="text-4xl md:text-5xl font-display font-bold mb-4">{landing.hero.title}</h1>
+            <p className="text-lg text-white/90 mb-6">
+              {landing.hero.subtitle}
+            </p>
+            <div className="flex gap-3">
+              <Link href={landing.hero.primaryButtonLink} className="btn bg-brand-primary hover:bg-brand-primary/90 text-white">{landing.hero.primaryButtonText}</Link>
+              <a href={landing.hero.secondaryButtonLink} className="btn bg-white/20 hover:bg-white/30 text-white border border-white/30">{landing.hero.secondaryButtonText}</a>
+            </div>
           </div>
         </div>
-        <MediaGallery items={(landing.hero.mediaItems as MediaItem[]) || []} />
         
         {/* Scroll down indicator */}
         <div className="absolute bottom-8 left-1/2 -translate-x-1/2 animate-bounce hidden md:block">
-          <a href="#services" className="flex flex-col items-center text-gray-500 hover:text-brand-primary transition">
+          <a href="#services" className="flex flex-col items-center text-white hover:text-brand-primary transition">
             <span className="text-sm mb-1">Scroll Down</span>
             <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 14l-7 7m0 0l-7-7m7 7V3" />
