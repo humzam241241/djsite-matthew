@@ -7,6 +7,7 @@ import about from "../content/about.json";
 import landing from "../content/landing.json";
 import pages from "../content/pages.json";
 import ContactForm from "./components/ContactForm";
+import contactContent from "../content/contact.json";
 import MediaGallery, { MediaItem } from "./components/MediaGallery";
 import HeroMediaGallery from "./components/HeroMediaGallery";
 
@@ -162,11 +163,11 @@ export default function HomePage() {
       <section id="contact" className="pt-16 pb-10">
         <div className="space-y-6">
           <div className="flex justify-between items-center">
-            <h2 className="text-3xl font-bold">{landing.sections.contact.title}</h2>
+            <h2 className="text-3xl font-bold">{contactContent.title || landing.sections.contact.title}</h2>
             <Link href="/contact" className="navlink">View All</Link>
           </div>
           <p className="text-gray-700">
-            {landing.sections.contact.description}
+            {contactContent.intro || landing.sections.contact.description}
           </p>
           <ContactForm />
         </div>

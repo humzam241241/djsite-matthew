@@ -8,7 +8,7 @@ import NavigationEditor from '../components/NavigationEditor';
 import Uploader from './_components/Uploader';
 import SectionTitleInput from '../components/SectionTitleInput';
 
-type ContentType = 'services' | 'testimonials' | 'gallery' | 'about' | 'pages' | 'landing' | 'navigation';
+type ContentType = 'services' | 'testimonials' | 'gallery' | 'about' | 'pages' | 'landing' | 'navigation' | 'contact';
 
 // Type for navigation items
 type NavItem = {
@@ -28,7 +28,8 @@ export default function AdminPage() {
     gallery: 'Gallery',
     about: 'About',
     pages: 'Custom Pages',
-    navigation: 'Navigation Menu'
+    navigation: 'Navigation Menu',
+    contact: 'Contact'
   });
   const [isLoading, setIsLoading] = useState(true);
   const [isSaving, setIsSaving] = useState(false);
@@ -56,29 +57,27 @@ export default function AdminPage() {
     const timestamp = new Date().getTime();
     
     try {
-      const response = await fetch(`/api/content?type=navigation&t=${timestamp}`);
+      // Fetch from our new pages API
+      const response = await fetch(`/api/pages?t=${timestamp}`, {
+        cache: "no-store"
+      });
+      
       if (response.ok) {
-        const data = await response.json();
+        const pages = await response.json();
         
-        // Create a mapping of section IDs to their custom labels
+        // Create a mapping of section IDs to their titles
         const labels: {[key: string]: string} = {
           landing: 'Landing Page',
-          services: 'Services',
-          testimonials: 'Testimonials',
-          gallery: 'Gallery',
-          about: 'About',
           pages: 'Custom Pages',
           navigation: 'Navigation Menu'
         };
         
-        // Update labels based on navigation settings
-        if (data && data.items) {
-          data.items.forEach((item: any) => {
-            if (item.id in labels && item.customLabel) {
-              labels[item.id] = item.customLabel;
-            }
-          });
-        }
+        // Update labels based on page titles
+        pages.forEach((page: any) => {
+          if (page.id in labels || ['services', 'testimonials', 'gallery', 'about'].includes(page.id)) {
+            labels[page.id] = page.title;
+          }
+        });
         
         setNavigationLabels(labels);
       }
@@ -145,7 +144,12 @@ export default function AdminPage() {
 
   return (
     <div className="space-y-6">
-      <h1 className="text-3xl font-bold">Admin Dashboard</h1>
+      <div className="flex justify-between items-center">
+        <h1 className="text-3xl font-bold">Admin Dashboard</h1>
+        <Link href="/admin/pages" className="px-4 py-2 rounded-lg bg-blue-100 hover:bg-blue-200 text-blue-800">
+          Page Management
+        </Link>
+      </div>
       
       <div className="flex gap-2 border-b pb-2 flex-wrap">
         <button 
@@ -189,6 +193,12 @@ export default function AdminPage() {
           className={`px-4 py-2 rounded-lg ${activeSection === 'navigation' ? 'bg-brand-primary text-white' : 'navlink'}`}
         >
           {navigationLabels.navigation}
+        </button>
+        <button 
+          onClick={() => setActiveSection('contact')}
+          className={`px-4 py-2 rounded-lg ${activeSection === 'contact' ? 'bg-brand-primary text-white' : 'navlink'}`}
+        >
+          {navigationLabels.contact}
         </button>
       </div>
 
@@ -287,6 +297,13 @@ function ContentEditor({
       return (
         <PagesEditor
           pages={content}
+          onChange={onChange}
+        />
+      );
+    case 'contact':
+      return (
+        <ContactEditor 
+          contact={content}
           onChange={onChange}
         />
       );
@@ -745,6 +762,79 @@ function AboutEditor({
               </button>
             </div>
           ))}
+        </div>
+      </div>
+    </div>
+  );
+}
+
+function ContactEditor({
+  contact,
+  onChange
+}: {
+  contact: { title: string; intro?: string; email?: string; phone?: string; address?: string };
+  onChange: (newContent: any) => void;
+}) {
+  function update(field: keyof typeof contact, value: string) {
+    const next = { ...contact, [field]: value };
+    onChange(next);
+  }
+
+  return (
+    <div className="space-y-4">
+      <div className="card">
+        <h3 className="text-xl font-semibold">Contact Page</h3>
+        <div className="space-y-3 mt-3">
+          <div>
+            <label className="block text-sm font-medium text-gray-700">Title</label>
+            <input
+              type="text"
+              value={contact?.title || ''}
+              onChange={(e) => update('title', e.target.value)}
+              className="w-full border rounded-lg p-2 mt-1"
+            />
+          </div>
+
+          <div>
+            <label className="block text-sm font-medium text-gray-700">Intro</label>
+            <textarea
+              value={contact?.intro || ''}
+              onChange={(e) => update('intro', e.target.value)}
+              rows={3}
+              className="w-full border rounded-lg p-2 mt-1"
+            />
+          </div>
+
+          <div className="grid md:grid-cols-2 gap-4">
+            <div>
+              <label className="block text-sm font-medium text-gray-700">Email</label>
+              <input
+                type="email"
+                value={contact?.email || ''}
+                onChange={(e) => update('email', e.target.value)}
+                className="w-full border rounded-lg p-2 mt-1"
+              />
+            </div>
+            <div>
+              <label className="block text-sm font-medium text-gray-700">Phone</label>
+              <input
+                type="text"
+                value={contact?.phone || ''}
+                onChange={(e) => update('phone', e.target.value)}
+                className="w-full border rounded-lg p-2 mt-1"
+              />
+            </div>
+          </div>
+
+          <div>
+            <label className="block text-sm font-medium text-gray-700">Address</label>
+            <input
+              type="text"
+              value={contact?.address || ''}
+              onChange={(e) => update('address', e.target.value)}
+              className="w-full border rounded-lg p-2 mt-1"
+            />
+          </div>
         </div>
       </div>
     </div>

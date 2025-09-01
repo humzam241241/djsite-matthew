@@ -110,7 +110,7 @@ export default function NavigationEditor({
       {/* Navigation Item List */}
       {!editingItem && (
         <div className="space-y-4">
-          {navigation.items
+          {(navigation?.items ?? [])
             .sort((a, b) => a.order - b.order)
             .map((item, index) => (
               <div key={item.id} className="card">
