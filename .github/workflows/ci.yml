@@ -44,3 +44,29 @@ jobs:
           test -f branding/logo_transparent.svg || true
           test -f public/sitemap.xml || true
           test -f public/robots.txt || true
+
+      - name: Audit checklist presence
+        run: |
+          test -f cms.manifest.json
+          test -f docs/CHECKLIST.md
+
+      - name: Audit required paths (allow alternatives)
+        run: |
+          ok=1
+          check() { for p in "$@"; do [ -e "$p" ] && return 0; done; return 1; }
+          check app/page.tsx pages/index.tsx || ok=0
+          check app/contact/page.tsx pages/contact.tsx || ok=0
+          check app/services/page.tsx pages/services.tsx || ok=0
+          check app/testimonials/page.tsx pages/testimonials.tsx || ok=0
+          check app/gallery/page.tsx pages/gallery.tsx || ok=0
+          check app/about/page.tsx pages/about.tsx || ok=0
+          check app/admin/page.tsx pages/admin/index.tsx || ok=0
+          check app/api/contact/route.ts pages/api/contact.ts || ok=0
+          check public/qr.png || ok=0
+          check branding/logo_black.svg || ok=0
+          check branding/logo_white.svg || ok=0
+          check branding/logo_transparent.svg || ok=0
+          check public/sitemap.xml || ok=0
+          check public/robots.txt || ok=0
+          if [ $ok -ne 1 ]; then echo "❌ Checklist audit failed. See docs/CHECKLIST.md"; exit 1; fi
+          echo "✅ Checklist audit passed."

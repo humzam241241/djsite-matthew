@@ -35,6 +35,9 @@ See the full checklist in [`docs/CHECKLIST.md`](docs/CHECKLIST.md).
 
 CMS: Present — see `cms.manifest.json`, `/admin`, `/api/admin/health`.
 
+### How uploads work
+- Media uploads use direct-to-storage (Vercel Blob or Cloudinary). The CMS stores only the returned CDN URL; large file bodies do not pass through Next.js.
+
 ## Env
 Copy `.env.example` to `.env.local`.
 
