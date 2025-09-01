@@ -30,7 +30,7 @@ export default function DynamicNavigation() {
     
     async function loadNavigation() {
       try {
-        // Fetch pages from our new API
+        // Fetch pages from our navigation source (pages JSON via API)
         const response = await fetch(`/api/pages?t=${timestamp}`, {
           cache: "no-store"
         });

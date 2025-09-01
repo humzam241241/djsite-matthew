@@ -33,6 +33,8 @@ See the full checklist in [`docs/CHECKLIST.md`](docs/CHECKLIST.md).
 | CI: lint, type-check, build, tests | ✅ |
 | CI: audit required files from checklist | ✅ |
 
+CMS: Present — see `cms.manifest.json`, `/admin`, `/api/admin/health`.
+
 ## Env
 Copy `.env.example` to `.env.local`.
 

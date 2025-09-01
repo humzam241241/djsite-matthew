@@ -46,8 +46,9 @@ export default function AdminPages() {
       // optimistic update
       setPages(prev => prev.map(p => (p.id === id ? { ...p, title } : p)));
       
-      const res = await fetch(`/api/pages/${id}`, {
-        method: "PUT",
+      // Use new PATCH /api/nav/[id] to keep Navbar in sync
+      const res = await fetch(`/api/nav/${id}`, {
+        method: "PATCH",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ title })
       });
@@ -65,6 +66,8 @@ export default function AdminPages() {
           text: "Page renamed successfully",
           type: "success"
         });
+        // Refetch to ensure we have server-confirmed titles
+        await loadPages();
         
         // Clear success message after 3 seconds
         setTimeout(() => {

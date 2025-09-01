@@ -1,0 +1,7 @@
+{
+  "cms": {
+    "routes": ["/admin", "/api/admin"],
+    "entities": ["NavItem", "Page", "Service", "Testimonial", "GalleryItem"],
+    "storage": "vercel-blob|cloudinary"
+  }
+}

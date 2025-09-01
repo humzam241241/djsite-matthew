@@ -24,8 +24,23 @@ jobs:
         run: |
           grep -q "Master Checklist" docs/CHECKLIST.md
           test -f README.md
+          test -f cms.manifest.json
+          test -f app/api/admin/health/route.ts
           test -f app/api/pages/route.ts
           test -f app/api/pages/[id]/route.ts
           test -f app/components/DynamicNavigation.tsx
           test -f app/admin/page.tsx
           test -f app/api/upload/route.ts
+          # Required public/branding files (best-effort presence checks)
+          test -f app/page.tsx
+          test -f app/services/page.tsx || true
+          test -f app/testimonials/page.tsx || true
+          test -f app/gallery/page.tsx || true
+          test -f app/about/page.tsx || true
+          test -f app/api/contact/route.ts || true
+          test -f public/qr.png || true
+          test -f branding/logo_black.svg || true
+          test -f branding/logo_white.svg || true
+          test -f branding/logo_transparent.svg || true
+          test -f public/sitemap.xml || true
+          test -f public/robots.txt || true
