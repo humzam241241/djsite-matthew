@@ -11,7 +11,7 @@ export async function GET(request: NextRequest) {
     return NextResponse.json({ error: "Content type is required" }, { status: 400 });
   }
   
-  const validTypes = ["services", "testimonials", "gallery", "about", "landing"];
+  const validTypes = ["services", "testimonials", "gallery", "about", "landing", "pages", "navigation"];
   if (!validTypes.includes(contentType)) {
     return NextResponse.json({ error: "Invalid content type" }, { status: 400 });
   }
@@ -35,7 +35,7 @@ export async function POST(request: NextRequest) {
     return NextResponse.json({ error: "Content type is required" }, { status: 400 });
   }
   
-  const validTypes = ["services", "testimonials", "gallery", "about", "landing"];
+  const validTypes = ["services", "testimonials", "gallery", "about", "landing", "pages", "navigation"];
   if (!validTypes.includes(contentType)) {
     return NextResponse.json({ error: "Invalid content type" }, { status: 400 });
   }
@@ -55,6 +55,8 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: "Invalid about structure" }, { status: 400 });
     } else if (contentType === "landing" && (!body.hero || !body.sections)) {
       return NextResponse.json({ error: "Invalid landing page structure" }, { status: 400 });
+    } else if (contentType === "navigation" && !body.items) {
+      return NextResponse.json({ error: "Invalid navigation structure" }, { status: 400 });
     }
     
     fs.writeFileSync(filePath, JSON.stringify(body, null, 2));

@@ -3,6 +3,7 @@
     {
       "id": "faq",
       "title": "FAQ",
+      "navigationName": "FAQ",
       "slug": "faq",
       "content": "<h1>Frequently Asked Questions</h1><p>Here are answers to some common questions about our services.</p><h2>How far in advance should I book?</h2><p>We recommend booking at least 3-6 months in advance for weddings and 1-2 months for other events.</p><h2>Do you provide equipment?</h2><p>Yes, we provide all necessary sound equipment, lighting, and other accessories needed for your event.</p>",
       "showInNavigation": true,
@@ -10,4 +11,3 @@
     }
   ]
 }
-

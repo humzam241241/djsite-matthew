@@ -9,6 +9,7 @@ type CustomPage = {
   slug: string;
   content: string;
   showInNavigation: boolean;
+  navigationName?: string; // Added navigation name field
   order: number;
 };
 
@@ -30,6 +31,7 @@ export default function PagesEditor({
     slug: "",
     content: "<h1>Page Title</h1><p>Page content goes here.</p>",
     showInNavigation: true,
+    navigationName: "", // Initialize navigation name
     order: 0
   });
 
@@ -51,6 +53,7 @@ export default function PagesEditor({
       slug: "",
       content: "<h1>Page Title</h1><p>Page content goes here.</p>",
       showInNavigation: true,
+      navigationName: "", // Initialize navigation name
       order: pages?.pages && pages.pages.length > 0 
         ? Math.max(...pages.pages.map(p => p.order)) + 1 
         : 0
@@ -72,6 +75,8 @@ export default function PagesEditor({
     
     const pageWithId: CustomPage = {
       ...newPage,
+      // If navigation name is empty, use the title as the default
+      navigationName: newPage.navigationName || newPage.title,
       id: uuidv4()
     };
     
@@ -167,6 +172,14 @@ export default function PagesEditor({
                     <div>
                       <h4 className="text-lg font-medium">{page.title}</h4>
                       <p className="text-sm text-gray-600">/{page.slug}</p>
+                      
+                      {/* Show navigation name if available */}
+                      {page.showInNavigation && (
+                        <p className="text-sm text-gray-600 mt-1">
+                          <span className="font-medium">Navigation:</span> {page.navigationName || page.title}
+                        </p>
+                      )}
+                      
                       <div className="mt-2 flex items-center">
                         <span className={`inline-flex items-center px-2 py-1 rounded-full text-xs ${
                           page.showInNavigation 
@@ -240,6 +253,9 @@ export default function PagesEditor({
                   onChange={(e) => setEditingPage({ ...editingPage, title: e.target.value })}
                   className="w-full border rounded-lg p-2 mt-1"
                 />
+                <p className="text-xs text-gray-500 mt-1">
+                  This is the title that appears on the page itself.
+                </p>
               </div>
               
               <div>
@@ -260,7 +276,39 @@ export default function PagesEditor({
                 </p>
               </div>
               
-              <div>
+              <div className="flex items-center mt-4">
+                <input
+                  type="checkbox"
+                  id="showInNavigation"
+                  checked={editingPage.showInNavigation}
+                  onChange={(e) => setEditingPage({ ...editingPage, showInNavigation: e.target.checked })}
+                  className="mr-2"
+                />
+                <label htmlFor="showInNavigation" className="text-sm font-medium text-gray-700">
+                  Show in Navigation
+                </label>
+              </div>
+              
+              {/* Navigation Name Field - only shown when showInNavigation is true */}
+              {editingPage.showInNavigation && (
+                <div className="mt-2">
+                  <label className="block text-sm font-medium text-gray-700">
+                    Navigation Menu Name
+                  </label>
+                  <input
+                    type="text"
+                    value={editingPage.navigationName || ''}
+                    onChange={(e) => setEditingPage({ ...editingPage, navigationName: e.target.value })}
+                    placeholder={editingPage.title} // Use the page title as a placeholder
+                    className="w-full border rounded-lg p-2 mt-1"
+                  />
+                  <p className="text-xs text-gray-500 mt-1">
+                    This is how the page will appear in the navigation menu. If left blank, the page title will be used.
+                  </p>
+                </div>
+              )}
+              
+              <div className="mt-4">
                 <label className="block text-sm font-medium text-gray-700">
                   Page Content (HTML)
                 </label>
@@ -273,19 +321,6 @@ export default function PagesEditor({
                 <p className="text-xs text-gray-500 mt-1">
                   You can use HTML tags to format your content.
                 </p>
-              </div>
-              
-              <div className="flex items-center">
-                <input
-                  type="checkbox"
-                  id="showInNavigation"
-                  checked={editingPage.showInNavigation}
-                  onChange={(e) => setEditingPage({ ...editingPage, showInNavigation: e.target.checked })}
-                  className="mr-2"
-                />
-                <label htmlFor="showInNavigation" className="text-sm font-medium text-gray-700">
-                  Show in Navigation
-                </label>
               </div>
               
               <div className="flex justify-end gap-2 mt-4">
@@ -333,6 +368,9 @@ export default function PagesEditor({
                   }}
                   className="w-full border rounded-lg p-2 mt-1"
                 />
+                <p className="text-xs text-gray-500 mt-1">
+                  This is the title that appears on the page itself.
+                </p>
               </div>
               
               <div>
@@ -353,7 +391,39 @@ export default function PagesEditor({
                 </p>
               </div>
               
-              <div>
+              <div className="flex items-center mt-4">
+                <input
+                  type="checkbox"
+                  id="showInNavigation"
+                  checked={newPage.showInNavigation}
+                  onChange={(e) => setNewPage({ ...newPage, showInNavigation: e.target.checked })}
+                  className="mr-2"
+                />
+                <label htmlFor="showInNavigation" className="text-sm font-medium text-gray-700">
+                  Show in Navigation
+                </label>
+              </div>
+              
+              {/* Navigation Name Field - only shown when showInNavigation is true */}
+              {newPage.showInNavigation && (
+                <div className="mt-2">
+                  <label className="block text-sm font-medium text-gray-700">
+                    Navigation Menu Name
+                  </label>
+                  <input
+                    type="text"
+                    value={newPage.navigationName || ''}
+                    onChange={(e) => setNewPage({ ...newPage, navigationName: e.target.value })}
+                    placeholder={newPage.title} // Use the page title as a placeholder
+                    className="w-full border rounded-lg p-2 mt-1"
+                  />
+                  <p className="text-xs text-gray-500 mt-1">
+                    This is how the page will appear in the navigation menu. If left blank, the page title will be used.
+                  </p>
+                </div>
+              )}
+              
+              <div className="mt-4">
                 <label className="block text-sm font-medium text-gray-700">
                   Page Content (HTML)
                 </label>
@@ -366,19 +436,6 @@ export default function PagesEditor({
                 <p className="text-xs text-gray-500 mt-1">
                   You can use HTML tags to format your content.
                 </p>
-              </div>
-              
-              <div className="flex items-center">
-                <input
-                  type="checkbox"
-                  id="showInNavigation"
-                  checked={newPage.showInNavigation}
-                  onChange={(e) => setNewPage({ ...newPage, showInNavigation: e.target.checked })}
-                  className="mr-2"
-                />
-                <label htmlFor="showInNavigation" className="text-sm font-medium text-gray-700">
-                  Show in Navigation
-                </label>
               </div>
               
               <div className="flex justify-end gap-2 mt-4">

@@ -11,6 +11,7 @@
     "test:ui": "playwright test"
   },
   "dependencies": {
+    "@vercel/blob": "^1.1.1",
     "formidable": "^3.5.4",
     "next": "14.2.5",
     "next-sitemap": "4.2.3",

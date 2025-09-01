@@ -15,8 +15,34 @@ export default function HomePage() {
     <div className="space-y-20">
       {/* Hero Section */}
       <section id="home" className="min-h-[80vh] relative flex items-center">
-        {/* Background Media Gallery */}
-        <HeroMediaGallery items={(landing.hero.mediaItems as MediaItem[]) || []} />
+        {/* Background Media or Video */}
+        {landing.hero.heroVideoUrl ? (
+          <div className="absolute inset-0 overflow-hidden">
+            <video 
+              src={landing.hero.heroVideoUrl}
+              poster={landing.hero.heroImageUrl || undefined}
+              autoPlay 
+              muted 
+              loop 
+              playsInline
+              className="w-full h-full object-cover"
+            />
+            {/* Semi-transparent overlay for better text readability */}
+            <div className="absolute inset-0 bg-black/30"></div>
+          </div>
+        ) : landing.hero.heroImageUrl ? (
+          <div className="absolute inset-0 overflow-hidden">
+            <img 
+              src={landing.hero.heroImageUrl} 
+              alt="Hero background"
+              className="w-full h-full object-cover"
+            />
+            {/* Semi-transparent overlay for better text readability */}
+            <div className="absolute inset-0 bg-black/30"></div>
+          </div>
+        ) : (
+          <HeroMediaGallery items={(landing.hero.mediaItems as MediaItem[]) || []} />
+        )}
         
         {/* Content overlay */}
         <div className="container mx-auto px-4 py-20 relative z-10">

@@ -1,22 +1,105 @@
-"use client";
+'use client';
 
-import { useState, useEffect } from "react";
-import Link from "next/link";
-import LandingPageEditor from "../components/LandingPageEditor";
-import PagesEditor from "../components/PagesEditor";
+import { useState, useEffect } from 'react';
+import Link from 'next/link';
+import LandingPageEditor from '../components/LandingPageEditor';
+import PagesEditor from '../components/PagesEditor';
+import NavigationEditor from '../components/NavigationEditor';
+import Uploader from './_components/Uploader';
+import SectionTitleInput from '../components/SectionTitleInput';
 
-type ContentType = "services" | "testimonials" | "gallery" | "about" | "pages" | "landing";
+type ContentType = 'services' | 'testimonials' | 'gallery' | 'about' | 'pages' | 'landing' | 'navigation';
+
+// Type for navigation items
+type NavItem = {
+  name: string;
+  href: string;
+  isExternal?: boolean;
+};
 
 export default function AdminPage() {
-  const [activeSection, setActiveSection] = useState<ContentType>("services");
+  const [activeSection, setActiveSection] = useState<ContentType>('landing');
   const [content, setContent] = useState<any>(null);
+  const [navItems, setNavItems] = useState<NavItem[]>([]);
+  const [navigationLabels, setNavigationLabels] = useState<{[key: string]: string}>({
+    landing: 'Landing Page',
+    services: 'Services',
+    testimonials: 'Testimonials',
+    gallery: 'Gallery',
+    about: 'About',
+    pages: 'Custom Pages',
+    navigation: 'Navigation Menu'
+  });
   const [isLoading, setIsLoading] = useState(true);
   const [isSaving, setIsSaving] = useState(false);
-  const [message, setMessage] = useState("");
+  const [message, setMessage] = useState('');
 
   useEffect(() => {
-    fetchContent(activeSection);
+    // Load navigation settings first to get custom labels
+    fetchNavigationLabels();
+    
+    if (activeSection === 'navigation') {
+      fetchNavigation();
+    } else {
+      fetchContent(activeSection);
+    }
+    
+    // Set up interval to refresh navigation labels every 5 seconds
+    const intervalId = setInterval(fetchNavigationLabels, 5000);
+    
+    // Clean up on unmount
+    return () => clearInterval(intervalId);
   }, [activeSection]);
+  
+  async function fetchNavigationLabels() {
+    // Add a timestamp to prevent caching
+    const timestamp = new Date().getTime();
+    
+    try {
+      const response = await fetch(`/api/content?type=navigation&t=${timestamp}`);
+      if (response.ok) {
+        const data = await response.json();
+        
+        // Create a mapping of section IDs to their custom labels
+        const labels: {[key: string]: string} = {
+          landing: 'Landing Page',
+          services: 'Services',
+          testimonials: 'Testimonials',
+          gallery: 'Gallery',
+          about: 'About',
+          pages: 'Custom Pages',
+          navigation: 'Navigation Menu'
+        };
+        
+        // Update labels based on navigation settings
+        if (data && data.items) {
+          data.items.forEach((item: any) => {
+            if (item.id in labels && item.customLabel) {
+              labels[item.id] = item.customLabel;
+            }
+          });
+        }
+        
+        setNavigationLabels(labels);
+      }
+    } catch (error) {
+      console.error('Error fetching navigation labels:', error);
+    }
+  }
+
+  async function fetchNavigation() {
+    setIsLoading(true);
+    try {
+      const response = await fetch('/api/content?type=navigation');
+      const data = await response.json();
+      setContent(data);
+    } catch (error) {
+      console.error('Error fetching navigation:', error);
+      setMessage('Failed to load navigation settings');
+    } finally {
+      setIsLoading(false);
+    }
+  }
 
   async function fetchContent(type: ContentType) {
     setIsLoading(true);
@@ -25,8 +108,8 @@ export default function AdminPage() {
       const data = await response.json();
       setContent(data);
     } catch (error) {
-      console.error("Error fetching content:", error);
-      setMessage("Failed to load content");
+      console.error('Error fetching content:', error);
+      setMessage('Failed to load content');
     } finally {
       setIsLoading(false);
     }
@@ -34,23 +117,23 @@ export default function AdminPage() {
 
   async function saveContent() {
     setIsSaving(true);
-    setMessage("");
+    setMessage('');
     try {
       const response = await fetch(`/api/content?type=${activeSection}`, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(content)
       });
       
       if (response.ok) {
-        setMessage("Content saved successfully!");
+        setMessage('Content saved successfully!');
       } else {
         const error = await response.json();
-        setMessage(`Error: ${error.error || "Failed to save"}`);
+        setMessage(`Error: ${error.error || 'Failed to save'}`);
       }
     } catch (error) {
-      console.error("Error saving content:", error);
-      setMessage("Failed to save content");
+      console.error('Error saving content:', error);
+      setMessage('Failed to save content');
     } finally {
       setIsSaving(false);
     }
@@ -66,40 +149,46 @@ export default function AdminPage() {
       
       <div className="flex gap-2 border-b pb-2 flex-wrap">
         <button 
-          onClick={() => setActiveSection("landing")}
-          className={`px-4 py-2 rounded-lg ${activeSection === "landing" ? "bg-brand-primary text-white" : "navlink"}`}
+          onClick={() => setActiveSection('landing')}
+          className={`px-4 py-2 rounded-lg ${activeSection === 'landing' ? 'bg-brand-primary text-white' : 'navlink'}`}
         >
-          Landing Page
+          {navigationLabels.landing}
         </button>
         <button 
-          onClick={() => setActiveSection("services")}
-          className={`px-4 py-2 rounded-lg ${activeSection === "services" ? "bg-brand-primary text-white" : "navlink"}`}
+          onClick={() => setActiveSection('services')}
+          className={`px-4 py-2 rounded-lg ${activeSection === 'services' ? 'bg-brand-primary text-white' : 'navlink'}`}
         >
-          Services
+          {navigationLabels.services}
         </button>
         <button 
-          onClick={() => setActiveSection("testimonials")}
-          className={`px-4 py-2 rounded-lg ${activeSection === "testimonials" ? "bg-brand-primary text-white" : "navlink"}`}
+          onClick={() => setActiveSection('testimonials')}
+          className={`px-4 py-2 rounded-lg ${activeSection === 'testimonials' ? 'bg-brand-primary text-white' : 'navlink'}`}
         >
-          Testimonials
+          {navigationLabels.testimonials}
         </button>
         <button 
-          onClick={() => setActiveSection("gallery")}
-          className={`px-4 py-2 rounded-lg ${activeSection === "gallery" ? "bg-brand-primary text-white" : "navlink"}`}
+          onClick={() => setActiveSection('gallery')}
+          className={`px-4 py-2 rounded-lg ${activeSection === 'gallery' ? 'bg-brand-primary text-white' : 'navlink'}`}
         >
-          Gallery
+          {navigationLabels.gallery}
         </button>
         <button 
-          onClick={() => setActiveSection("about")}
-          className={`px-4 py-2 rounded-lg ${activeSection === "about" ? "bg-brand-primary text-white" : "navlink"}`}
+          onClick={() => setActiveSection('about')}
+          className={`px-4 py-2 rounded-lg ${activeSection === 'about' ? 'bg-brand-primary text-white' : 'navlink'}`}
         >
-          About
+          {navigationLabels.about}
         </button>
         <button 
-          onClick={() => setActiveSection("pages")}
-          className={`px-4 py-2 rounded-lg ${activeSection === "pages" ? "bg-brand-primary text-white" : "navlink"}`}
+          onClick={() => setActiveSection('pages')}
+          className={`px-4 py-2 rounded-lg ${activeSection === 'pages' ? 'bg-brand-primary text-white' : 'navlink'}`}
         >
-          Custom Pages
+          {navigationLabels.pages}
+        </button>
+        <button 
+          onClick={() => setActiveSection('navigation')}
+          className={`px-4 py-2 rounded-lg ${activeSection === 'navigation' ? 'bg-brand-primary text-white' : 'navlink'}`}
+        >
+          {navigationLabels.navigation}
         </button>
       </div>
 
@@ -108,10 +197,10 @@ export default function AdminPage() {
       ) : (
         <div className="space-y-4">
           <div className="flex justify-between items-center">
-            <h2 className="text-2xl font-semibold capitalize">{activeSection}</h2>
+            <h2 className="text-2xl font-semibold">{navigationLabels[activeSection]}</h2>
             <div className="flex gap-2">
-              <Link href={`/${activeSection}`} className="navlink" target="_blank">
-                View Page
+              <Link href={`/${activeSection === 'landing' ? '' : activeSection === 'navigation' ? '' : activeSection}`} className="navlink" target="_blank">
+                View {activeSection === 'navigation' ? 'Site' : 'Page'}
               </Link>
               <button 
                 onClick={saveContent} 
@@ -129,11 +218,18 @@ export default function AdminPage() {
             </div>
           )}
 
-          <ContentEditor 
-            type={activeSection} 
-            content={content} 
-            onChange={handleContentChange} 
-          />
+          {activeSection === 'navigation' ? (
+            <NavigationEditor 
+              navigation={content} 
+              onChange={handleContentChange} 
+            />
+          ) : (
+            <ContentEditor 
+              type={activeSection} 
+              content={content} 
+              onChange={handleContentChange} 
+            />
+          )}
         </div>
       )}
     </div>
@@ -152,42 +248,42 @@ function ContentEditor({
   if (!content) return null;
 
   switch (type) {
-    case "landing":
+    case 'landing':
       return (
         <LandingPageEditor
           landing={content}
           onChange={onChange}
         />
       );
-    case "services":
+    case 'services':
       return (
         <ServicesEditor 
           services={content} 
           onChange={onChange} 
         />
       );
-    case "testimonials":
+    case 'testimonials':
       return (
         <TestimonialsEditor 
           testimonials={content} 
           onChange={onChange} 
         />
       );
-    case "gallery":
+    case 'gallery':
       return (
         <GalleryEditor 
           gallery={content} 
           onChange={onChange} 
         />
       );
-    case "about":
+    case 'about':
       return (
         <AboutEditor 
           about={content} 
           onChange={onChange} 
         />
       );
-    case "pages":
+    case 'pages':
       return (
         <PagesEditor
           pages={content}
@@ -203,9 +299,12 @@ function ServicesEditor({
   services, 
   onChange 
 }: { 
-  services: { categories: Array<{ slug: string; title: string; description: string }> }; 
+  services: { categories: Array<{ slug: string; title: string; description: string }>, sectionTitle?: string }; 
   onChange: (newContent: any) => void;
 }) {
+  // Initialize section title if not present
+  const [sectionTitle, setSectionTitle] = useState(services.sectionTitle || "Services");
+
   function updateCategory(index: number, field: string, value: string) {
     const newServices = { ...services };
     newServices.categories[index] = {
@@ -215,8 +314,13 @@ function ServicesEditor({
     onChange(newServices);
   }
 
+  function updateSectionTitle(newTitle: string) {
+    const newServices = { ...services, sectionTitle: newTitle };
+    onChange(newServices);
+  }
+
   function addCategory() {
-    const newServices = services ? { ...services } : { categories: [] };
+    const newServices = services ? { ...services } : { categories: [], sectionTitle };
     if (!newServices.categories) {
       newServices.categories = [];
     }
@@ -237,6 +341,21 @@ function ServicesEditor({
 
   return (
     <div className="space-y-4">
+      <div className="card">
+        <h3 className="text-xl font-semibold mb-3">Section Settings</h3>
+        <div>
+          <label className="block text-sm font-medium text-gray-700 mb-1">Section Title</label>
+          <SectionTitleInput
+            sectionId="services"
+            initialValue={sectionTitle}
+            onChange={updateSectionTitle}
+          />
+          <p className="text-xs text-gray-500 mt-1">
+            This title will be used in the navigation bar and admin dashboard.
+          </p>
+        </div>
+      </div>
+      
       <button onClick={addCategory} className="navlink">
         + Add Service Category
       </button>
@@ -294,9 +413,12 @@ function TestimonialsEditor({
   testimonials, 
   onChange 
 }: { 
-  testimonials: { items: Array<{ quote: string; author: string }> }; 
+  testimonials: { items: Array<{ quote: string; author: string }>, sectionTitle?: string }; 
   onChange: (newContent: any) => void;
 }) {
+  // Initialize section title if not present
+  const [sectionTitle, setSectionTitle] = useState(testimonials.sectionTitle || "Testimonials");
+
   function updateTestimonial(index: number, field: string, value: string) {
     const newTestimonials = { ...testimonials };
     newTestimonials.items[index] = {
@@ -306,8 +428,13 @@ function TestimonialsEditor({
     onChange(newTestimonials);
   }
 
+  function updateSectionTitle(newTitle: string) {
+    const newTestimonials = { ...testimonials, sectionTitle: newTitle };
+    onChange(newTestimonials);
+  }
+
   function addTestimonial() {
-    const newTestimonials = testimonials ? { ...testimonials } : { items: [] };
+    const newTestimonials = testimonials ? { ...testimonials } : { items: [], sectionTitle };
     if (!newTestimonials.items) {
       newTestimonials.items = [];
     }
@@ -327,6 +454,21 @@ function TestimonialsEditor({
 
   return (
     <div className="space-y-4">
+      <div className="card">
+        <h3 className="text-xl font-semibold mb-3">Section Settings</h3>
+        <div>
+          <label className="block text-sm font-medium text-gray-700 mb-1">Section Title</label>
+          <SectionTitleInput
+            sectionId="testimonials"
+            initialValue={sectionTitle}
+            onChange={updateSectionTitle}
+          />
+          <p className="text-xs text-gray-500 mt-1">
+            This title will be used in the navigation bar and admin dashboard.
+          </p>
+        </div>
+      </div>
+      
       <button onClick={addTestimonial} className="navlink">
         + Add Testimonial
       </button>
@@ -374,9 +516,12 @@ function GalleryEditor({
   gallery, 
   onChange 
 }: { 
-  gallery: { items: Array<{ src: string; alt: string }> }; 
+  gallery: { items: Array<{ src: string; alt: string }>, sectionTitle?: string }; 
   onChange: (newContent: any) => void;
 }) {
+  // Initialize section title if not present
+  const [sectionTitle, setSectionTitle] = useState(gallery.sectionTitle || "Gallery");
+
   function updateGalleryItem(index: number, field: string, value: string) {
     const newGallery = { ...gallery };
     newGallery.items[index] = {
@@ -386,13 +531,18 @@ function GalleryEditor({
     onChange(newGallery);
   }
 
+  function updateSectionTitle(newTitle: string) {
+    const newGallery = { ...gallery, sectionTitle: newTitle };
+    onChange(newGallery);
+  }
+
   function addGalleryItem() {
-    const newGallery = gallery ? { ...gallery } : { items: [] };
+    const newGallery = gallery ? { ...gallery } : { items: [], sectionTitle };
     if (!newGallery.items) {
       newGallery.items = [];
     }
     newGallery.items.push({
-      src: "/placeholder.jpg",
+      src: "",
       alt: "New gallery item"
     });
     onChange(newGallery);
@@ -405,8 +555,27 @@ function GalleryEditor({
     onChange(newGallery);
   }
 
+  function handleImageUploaded(index: number, url: string) {
+    updateGalleryItem(index, "src", url);
+  }
+
   return (
     <div className="space-y-4">
+      <div className="card">
+        <h3 className="text-xl font-semibold mb-3">Section Settings</h3>
+        <div>
+          <label className="block text-sm font-medium text-gray-700 mb-1">Section Title</label>
+          <SectionTitleInput
+            sectionId="gallery"
+            initialValue={sectionTitle}
+            onChange={updateSectionTitle}
+          />
+          <p className="text-xs text-gray-500 mt-1">
+            This title will be used in the navigation bar and admin dashboard.
+          </p>
+        </div>
+      </div>
+      
       <button onClick={addGalleryItem} className="navlink">
         + Add Gallery Item
       </button>
@@ -423,14 +592,29 @@ function GalleryEditor({
             </button>
           </div>
           
-          <div className="space-y-3 mt-3">
+          <div className="space-y-4 mt-3">
+            {/* Image Upload */}
             <div>
-              <label className="block text-sm font-medium text-gray-700">Image Path</label>
+              <label className="block text-sm font-medium text-gray-700 mb-2">Gallery Image</label>
+              <Uploader
+                label="Upload Gallery Image"
+                accept="image/*"
+                onUploaded={(url) => handleImageUploaded(index, url)}
+              />
+            </div>
+            
+            {/* Manual URL Input (as fallback) */}
+            <div className="mt-4 pt-4 border-t">
+              <label className="block text-sm font-medium text-gray-700">Image Path (Manual Entry)</label>
+              <div className="text-xs text-gray-500 mb-2">
+                You can also enter the image path manually if you prefer.
+              </div>
               <input
                 type="text"
                 value={item.src}
                 onChange={(e) => updateGalleryItem(index, "src", e.target.value)}
-                className="w-full border rounded-lg p-2 mt-1"
+                className="w-full border rounded-lg p-2"
+                placeholder="/uploads/images/example.jpg"
               />
             </div>
             
@@ -441,17 +625,20 @@ function GalleryEditor({
                 value={item.alt}
                 onChange={(e) => updateGalleryItem(index, "alt", e.target.value)}
                 className="w-full border rounded-lg p-2 mt-1"
+                placeholder="Descriptive text for the image"
               />
             </div>
             
             {item.src && (
               <div className="mt-2">
-                <p className="text-sm text-gray-600">Preview:</p>
-                <img 
-                  src={item.src} 
-                  alt={item.alt} 
-                  className="max-h-40 mt-1 border rounded"
-                />
+                <p className="text-sm font-medium text-gray-700">Preview:</p>
+                <div className="mt-2 p-2 border rounded-lg bg-gray-50">
+                  <img 
+                    src={item.src} 
+                    alt={item.alt} 
+                    className="max-h-60 mx-auto"
+                  />
+                </div>
               </div>
             )}
           </div>
@@ -465,11 +652,19 @@ function AboutEditor({
   about, 
   onChange 
 }: { 
-  about: { blurb: string; referrals: string[] }; 
+  about: { blurb: string; referrals: string[]; sectionTitle?: string }; 
   onChange: (newContent: any) => void;
 }) {
+  // Initialize section title if not present
+  const [sectionTitle, setSectionTitle] = useState(about.sectionTitle || "About");
+
   function updateBlurb(value: string) {
-    const newAbout = about ? { ...about, blurb: value } : { blurb: value, referrals: [] };
+    const newAbout = about ? { ...about, blurb: value } : { blurb: value, referrals: [], sectionTitle };
+    onChange(newAbout);
+  }
+
+  function updateSectionTitle(newTitle: string) {
+    const newAbout = { ...about, sectionTitle: newTitle };
     onChange(newAbout);
   }
 
@@ -481,7 +676,7 @@ function AboutEditor({
   }
 
   function addReferral() {
-    const newAbout = about ? { ...about } : { blurb: "", referrals: [] };
+    const newAbout = about ? { ...about } : { blurb: "", referrals: [], sectionTitle };
     if (!newAbout.referrals) {
       newAbout.referrals = [];
     }
@@ -498,6 +693,21 @@ function AboutEditor({
 
   return (
     <div className="space-y-4">
+      <div className="card">
+        <h3 className="text-xl font-semibold mb-3">Section Settings</h3>
+        <div>
+          <label className="block text-sm font-medium text-gray-700 mb-1">Section Title</label>
+          <SectionTitleInput
+            sectionId="about"
+            initialValue={sectionTitle}
+            onChange={updateSectionTitle}
+          />
+          <p className="text-xs text-gray-500 mt-1">
+            This title will be used in the navigation bar and admin dashboard.
+          </p>
+        </div>
+      </div>
+      
       <div className="card">
         <h3 className="text-xl font-semibold">About Blurb</h3>
         <div className="mt-3">

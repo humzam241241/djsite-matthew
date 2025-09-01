@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import MediaEditor from "./MediaEditor";
+import Uploader from "../admin/_components/Uploader";
 
 type MediaItem = {
   type: "image" | "video";
@@ -17,6 +18,8 @@ type LandingPageContent = {
     primaryButtonLink: string;
     secondaryButtonText: string;
     secondaryButtonLink: string;
+    heroImageUrl?: string | null;
+    heroVideoUrl?: string | null;
     mediaItems?: MediaItem[];
   };
   sections: {
@@ -95,14 +98,6 @@ export default function LandingPageEditor({
           Hero Section
         </button>
         <button
-          onClick={() => setActiveTab("media")}
-          className={`px-4 py-2 rounded-lg ${
-            activeTab === "media" ? "bg-brand-primary text-white" : "navlink"
-          }`}
-        >
-          Media Gallery
-        </button>
-        <button
           onClick={() => setActiveTab("sections")}
           className={`px-4 py-2 rounded-lg ${
             activeTab === "sections" ? "bg-brand-primary text-white" : "navlink"
@@ -113,9 +108,56 @@ export default function LandingPageEditor({
       </div>
 
       {activeTab === "hero" ? (
-        <div className="space-y-4">
+        <div className="space-y-6">
           <h3 className="text-xl font-semibold">Hero Section</h3>
+          
+          {/* Hero Media */}
           <div className="card">
+            <h4 className="text-lg font-semibold mb-4">Hero Media</h4>
+            
+            <div className="space-y-6">
+              <div>
+                <h5 className="font-medium mb-3">Hero Image</h5>
+                <Uploader
+                  label="Upload Hero Image"
+                  accept="image/*"
+                  onUploaded={(url) => updateHero("heroImageUrl", url)}
+                />
+                {landing?.hero?.heroImageUrl && (
+                  <div className="mt-4 rounded-xl overflow-hidden">
+                    <img 
+                      src={landing.hero.heroImageUrl} 
+                      alt="Hero" 
+                      className="w-full h-auto max-h-64 object-cover"
+                    />
+                  </div>
+                )}
+              </div>
+
+              <div>
+                <h5 className="font-medium mb-3">Hero Video</h5>
+                <Uploader
+                  label="Upload Hero Video"
+                  accept="video/*"
+                  onUploaded={(url) => updateHero("heroVideoUrl", url)}
+                />
+                {landing?.hero?.heroVideoUrl && (
+                  <div className="mt-4 rounded-xl overflow-hidden">
+                    <video 
+                      src={landing.hero.heroVideoUrl} 
+                      controls 
+                      playsInline
+                      className="w-full h-auto max-h-64"
+                    />
+                  </div>
+                )}
+              </div>
+            </div>
+          </div>
+          
+          {/* Hero Content */}
+          <div className="card">
+            <h4 className="text-lg font-semibold mb-4">Hero Content</h4>
             <div className="space-y-3">
               <div>
                 <label className="block text-sm font-medium text-gray-700">
@@ -202,12 +244,20 @@ export default function LandingPageEditor({
               </div>
             </div>
           </div>
+          
+          {/* Legacy Media Gallery */}
+          <div className="card">
+            <h4 className="text-lg font-semibold mb-4">Legacy Media Gallery</h4>
+            <p className="text-sm text-gray-600 mb-4">
+              Note: The Hero Image and Hero Video above are recommended for better performance. 
+              This media gallery is kept for backward compatibility.
+            </p>
+            <MediaEditor 
+              items={landing?.hero?.mediaItems || []} 
+              onChange={updateMediaItems} 
+            />
+          </div>
         </div>
-      ) : activeTab === "media" ? (
-        <MediaEditor 
-          items={landing?.hero?.mediaItems || []} 
-          onChange={updateMediaItems} 
-        />
       ) : (
         <div className="space-y-4">
           <h3 className="text-xl font-semibold">Page Sections</h3>

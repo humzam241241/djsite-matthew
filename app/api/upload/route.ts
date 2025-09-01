@@ -1,28 +1,109 @@
-import { NextRequest, NextResponse } from "next/server";
-import { writeFile, mkdir } from "fs/promises";
-import { join, dirname } from "path";
+// app/api/upload/route.ts
+import { NextResponse } from 'next/server';
+import { writeFile, mkdir, access } from "fs/promises";
+import { join, dirname, extname } from "path";
 import { v4 as uuidv4 } from "uuid";
+import { constants } from 'fs';
 
-export const maxDuration = 60; // Set max duration for the API route to 60 seconds
+// Use Node.js runtime for file system operations
+export const runtime = 'nodejs';
 
-export async function POST(request: NextRequest) {
+// Check if Vercel Blob is configured
+const isVercelBlobConfigured = process.env.BLOB_READ_WRITE_TOKEN && process.env.BLOB_READ_WRITE_TOKEN !== "vercel-blob-rw-token-goes-here-for-local-dev";
+
+export async function POST(request: Request) {
   try {
-    const formData = await request.formData();
-    const file = formData.get("file") as File | null;
-    const fileType = formData.get("type") as string || "image";
-
-    if (!file) {
-      return NextResponse.json({ error: "No file provided" }, { status: 400 });
+    console.log("Upload API called with content-type:", request.headers.get('content-type'));
+    
+    // Check if we're receiving a file upload
+    const contentType = request.headers.get('content-type') || '';
+    
+    if (contentType.includes('multipart/form-data')) {
+      // Handle file upload
+      try {
+        const formData = await request.formData();
+        console.log("FormData keys:", Array.from(formData.keys()));
+        
+        const file = formData.get('file');
+        if (!file || !(file instanceof Blob)) {
+          console.error("No file in request or file is not a Blob");
+          return NextResponse.json({ 
+            success: false, 
+            error: 'No file provided or invalid file format' 
+          }, { status: 400 });
+        }
+        
+        const fileType = formData.get('type') as string || 
+                        (file.type.startsWith('image/') ? 'image' : 
+                         file.type.startsWith('video/') ? 'video' : 'image');
+        
+        // Get file name if available
+        const fileName = 'name' in file ? file.name : `upload-${Date.now()}`;
+        
+        console.log("File upload attempt:", {
+          name: fileName,
+          type: file.type,
+          size: file.size,
+          requestedType: fileType
+        });
+        
+        // Try to use Vercel Blob if configured
+        if (isVercelBlobConfigured) {
+          try {
+            const { put } = await import('@vercel/blob');
+            
+            // Upload to Vercel Blob
+            const blobName = `upload-${Date.now()}-${uuidv4().substring(0, 8)}${extname(fileName)}`;
+            const blob = await put(blobName, file, {
+              access: 'public',
+            });
+            
+            console.log("File uploaded to Vercel Blob:", blob.url);
+            return NextResponse.json({
+              success: true,
+              file: {
+                url: blob.url,
+                type: fileType,
+                name: fileName,
+              },
+            });
+          } catch (blobError: any) {
+            console.error("Vercel Blob upload failed, falling back to filesystem:", blobError);
+            // Fall back to file system upload
+          }
+        }
+        
+        // Fall back to file system upload if Vercel Blob is not configured or failed
+        return await handleFileSystemUpload(file, fileType, fileName);
+      } catch (formError: any) {
+        console.error("Error processing form data:", formError);
+        return NextResponse.json({ 
+          success: false,
+          error: `Error processing form data: ${formError.message}`,
+          stack: formError.stack
+        }, { status: 400 });
+      }
+    } else {
+      // For API-only requests, return a simple success response
+      return NextResponse.json({
+        success: true,
+        message: "Upload endpoint is ready. Send a multipart/form-data request with a file to upload."
+      });
     }
+  } catch (error: any) {
+    console.error('Error handling upload:', error);
+    return NextResponse.json({ 
+      success: false,
+      error: `Upload failed: ${error.message || 'Unknown error'}`,
+      stack: error.stack,
+      timestamp: new Date().toISOString()
+    }, { status: 500 });
+  }
+}
 
-    // Log file information for debugging
-    console.log("File upload attempt:", {
-      name: file.name,
-      type: file.type,
-      size: file.size,
-      requestedType: fileType
-    });
-
+// Original file system upload implementation
+async function handleFileSystemUpload(file: Blob, fileType: string, originalFileName: string) {
+  try {
     // Validate file type
     const validImageTypes = ["image/jpeg", "image/png", "image/gif", "image/webp"];
     const validVideoTypes = ["video/mp4", "video/webm"];
@@ -32,46 +113,67 @@ export async function POST(request: NextRequest) {
       uploadDir = "uploads/videos";
       if (!validVideoTypes.includes(file.type)) {
         return NextResponse.json({ 
-          error: "Invalid video format. Supported formats: MP4, WebM",
+          success: false,
+          error: `Invalid video format: ${file.type}. Supported formats: MP4, WebM`,
           fileType: file.type
         }, { status: 400 });
       }
     } else {
       if (!validImageTypes.includes(file.type)) {
         return NextResponse.json({ 
-          error: "Invalid image format. Supported formats: JPEG, PNG, GIF, WebP",
+          success: false,
+          error: `Invalid image format: ${file.type}. Supported formats: JPEG, PNG, GIF, WebP`,
           fileType: file.type
         }, { status: 400 });
       }
     }
     
-    // Check file size (limit to 10MB)
-    const maxSize = 10 * 1024 * 1024; // 10MB
-    if (file.size > maxSize) {
-      return NextResponse.json({ 
-        error: "File too large. Maximum size is 10MB",
-        size: file.size
-      }, { status: 400 });
+    // Get file extension from original filename or mime type
+    let fileExtension = extname(originalFileName);
+    if (!fileExtension) {
+      // Fallback to mime type
+      fileExtension = `.${file.type.split("/")[1] || "bin"}`;
+    }
+    
+    // Create a unique filename
+    const timestamp = Date.now();
+    const uniqueId = uuidv4().substring(0, 8);
+    const fileName = `${timestamp}-${uniqueId}${fileExtension}`;
+    
+    // Create full path
+    const publicDir = join(process.cwd(), "public");
+    const uploadPath = join(publicDir, uploadDir);
+    const filePath = join(uploadPath, fileName);
+    const publicPath = `/${uploadDir}/${fileName}`;
+    
+    console.log("Saving file to:", filePath);
+    
+    // Ensure public directory exists
+    try {
+      await access(publicDir, constants.R_OK | constants.W_OK);
+    } catch (error) {
+      console.error("Public directory doesn't exist or isn't writable:", error);
+      return NextResponse.json({
+        success: false,
+        error: "Server storage error: public directory not accessible",
+        details: (error as Error).message
+      }, { status: 500 });
+    }
+    
+    // Ensure upload directory exists
+    try {
+      await mkdir(uploadPath, { recursive: true });
+      console.log("Upload directory created or confirmed:", uploadPath);
+    } catch (mkdirError) {
+      console.error("Failed to create upload directory:", mkdirError);
+      return NextResponse.json({
+        success: false,
+        error: "Server storage error: couldn't create upload directory",
+        details: (mkdirError as Error).message
+      }, { status: 500 });
     }
     
     try {
-      // Create a unique filename
-      const timestamp = Date.now();
-      const uniqueId = uuidv4().substring(0, 8);
-      const fileExtension = file.name.split(".").pop() || "";
-      const fileName = `${timestamp}-${uniqueId}.${fileExtension}`;
-      
-      // Create full path
-      const publicDir = join(process.cwd(), "public");
-      const uploadPath = join(publicDir, uploadDir);
-      const filePath = join(uploadPath, fileName);
-      const publicPath = `/${uploadDir}/${fileName}`;
-      
-      console.log("Saving file to:", filePath);
-      
-      // Ensure directory exists
-      await mkdir(dirname(filePath), { recursive: true });
-      
       // Convert file to buffer and save
       const bytes = await file.arrayBuffer();
       const buffer = Buffer.from(bytes);
@@ -85,21 +187,22 @@ export async function POST(request: NextRequest) {
         file: {
           url: publicPath,
           type: fileType,
-          name: file.name,
+          name: originalFileName,
         },
       });
-    } catch (error: any) {
-      console.error("File system error:", error);
-      return NextResponse.json({ 
-        error: "Failed to save file",
-        details: error.message,
-        stack: error.stack
+    } catch (writeError) {
+      console.error("Failed to write file:", writeError);
+      return NextResponse.json({
+        success: false,
+        error: "Server storage error: couldn't write file",
+        details: (writeError as Error).message
       }, { status: 500 });
     }
   } catch (error: any) {
-    console.error("Upload error:", error);
+    console.error("File system error:", error);
     return NextResponse.json({ 
-      error: "Failed to process upload",
+      success: false,
+      error: `Failed to save file: ${error.message}`,
       details: error.message,
       stack: error.stack
     }, { status: 500 });

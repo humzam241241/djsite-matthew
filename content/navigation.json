@@ -1,0 +1,76 @@
+{
+  "items": [
+    {
+      "id": "home",
+      "defaultLabel": "Home",
+      "customLabel": "Home",
+      "href": "/",
+      "scrollId": "home",
+      "order": 0,
+      "visible": true
+    },
+    {
+      "id": "services",
+      "defaultLabel": "Services",
+      "customLabel": "What We Do",
+      "href": "/services",
+      "scrollId": "services",
+      "order": 1,
+      "visible": true
+    },
+    {
+      "id": "testimonials",
+      "defaultLabel": "Testimonials",
+      "customLabel": "Why Us",
+      "href": "/testimonials",
+      "scrollId": "testimonials",
+      "order": 2,
+      "visible": true
+    },
+    {
+      "id": "gallery",
+      "defaultLabel": "Gallery",
+      "customLabel": "Gallery",
+      "href": "/gallery",
+      "scrollId": "gallery",
+      "order": 3,
+      "visible": true
+    },
+    {
+      "id": "about",
+      "defaultLabel": "About",
+      "customLabel": "Who We Are",
+      "href": "/about",
+      "scrollId": "about",
+      "order": 4,
+      "visible": true
+    },
+    {
+      "id": "contact",
+      "defaultLabel": "Contact",
+      "customLabel": "Contact",
+      "href": "/contact",
+      "scrollId": "contact",
+      "order": 5,
+      "visible": true
+    },
+    {
+      "id": "faq",
+      "defaultLabel": "FAQ",
+      "customLabel": "FAQ",
+      "href": "/faq",
+      "scrollId": "",
+      "order": 6,
+      "visible": true
+    },
+    {
+      "id": "admin",
+      "defaultLabel": "Admin",
+      "customLabel": "Admin",
+      "href": "/admin",
+      "scrollId": "",
+      "order": 7,
+      "visible": true
+    }
+  ]
+}

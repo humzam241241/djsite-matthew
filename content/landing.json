@@ -6,15 +6,17 @@
     "primaryButtonLink": "#contact",
     "secondaryButtonText": "QR Code",
     "secondaryButtonLink": "/qr.png",
+    "heroImageUrl": "/uploads/images/1756731172310-a328aa88.png",
+    "heroVideoUrl": null,
     "mediaItems": []
   },
   "sections": {
     "services": {
-      "title": "Services",
+      "title": "hi ",
       "description": "We offer a range of professional DJ services for various events. Contact us for custom packages."
     },
     "testimonials": {
-      "title": "Testimonials",
+      "title": "Why us",
       "description": "Don't just take our word for it. Here's what our clients have to say about our services."
     },
     "gallery": {
@@ -22,7 +24,7 @@
       "description": "Browse through photos from our past events and performances."
     },
     "about": {
-      "title": "About Sound Vibe",
+      "title": "Who we are ",
       "description": "Learn more about our team and our approach to creating memorable events."
     },
     "contact": {
