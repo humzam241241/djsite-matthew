@@ -1,4 +1,5 @@
 # djsite-matthew (Sound Vibe)
+[![CI](https://github.com/${{ github.repository }}/actions/workflows/ci.yml/badge.svg)](https://github.com/${{ github.repository }}/actions/workflows/ci.yml)
 
 Production-ready Next.js site with Admin CMS, dynamic navigation, large file uploads, and CI.
 
