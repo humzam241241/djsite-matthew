@@ -5,7 +5,7 @@ Production-ready Next.js site with Admin CMS, dynamic navigation, large file upl
 
 ## Quickstart
 1. Install Node.js 20+.
-2. On Windows, double-click `run_dev.bat` (uses npm). Or run manually:
+2. On Windows, double-click `djsite.bat` (uses npm). Or run manually:
    ```bash
    npm install
    npm run dev
