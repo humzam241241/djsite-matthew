@@ -1,58 +1,51 @@
 [
   {
     "id": "home",
-    "slug": "/",
     "title": "Home",
-    "showInNav": true,
+    "slug": "/",
+    "nav": true,
     "order": 0
   },
   {
     "id": "services",
+    "title": "Services",
     "slug": "/services",
-    "title": "What We Do ",
-    "showInNav": true,
+    "nav": true,
     "order": 1
   },
   {
-    "id": "testimonials",
-    "slug": "/testimonials",
-    "title": "Why Us",
-    "showInNav": true,
+    "id": "gallery",
+    "title": "Gallery",
+    "slug": "/gallery",
+    "nav": true,
     "order": 2
   },
   {
-    "id": "gallery",
-    "slug": "/gallery",
-    "title": "Gallery",
-    "showInNav": true,
+    "id": "testimonials",
+    "title": "Testimonials",
+    "slug": "/testimonials",
+    "nav": true,
     "order": 3
   },
   {
     "id": "about",
+    "title": "About",
     "slug": "/about",
-    "title": "Who We Are",
-    "showInNav": true,
+    "nav": true,
     "order": 4
   },
   {
     "id": "contact",
-    "slug": "/contact",
     "title": "Contact",
-    "showInNav": true,
+    "slug": "/contact",
+    "nav": true,
     "order": 5
   },
   {
-    "id": "faq",
-    "slug": "/faq",
-    "title": "FAQ",
-    "showInNav": true,
-    "order": 6
-  },
-  {
     "id": "admin",
-    "slug": "/admin",
     "title": "Admin",
-    "showInNav": true,
-    "order": 7
+    "slug": "/admin",
+    "nav": false,
+    "order": 6
   }
 ]

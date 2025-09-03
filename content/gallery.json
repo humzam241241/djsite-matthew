@@ -1,12 +1,18 @@
-{
-  "items": [
-    {
-      "src": "/uploads/images/1756733621675-0fefb31f.png",
-      "alt": "Sound Vibe logo black"
-    },
-    {
-      "src": "/uploads/images/1756733631859-bbc17ff3.png",
-      "alt": "Sound Vibe logo white"
-    }
-  ]
-}
+[
+  {
+    "id": "g1",
+    "type": "image",
+    "src": "/uploads/images/1756733621675-0fefb31f.png",
+    "alt": "Sound Vibe logo black",
+    "w": 800,
+    "h": 600
+  },
+  {
+    "id": "g2",
+    "type": "image",
+    "src": "/uploads/images/1756733631859-bbc17ff3.png",
+    "alt": "Sound Vibe logo white",
+    "w": 800,
+    "h": 600
+  }
+]

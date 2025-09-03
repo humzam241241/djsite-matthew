@@ -4,12 +4,35 @@ import { writeFile, mkdir, access } from "fs/promises";
 import { join, dirname, extname } from "path";
 import { v4 as uuidv4 } from "uuid";
 import { constants } from 'fs';
+import { v2 as cloudinary } from 'cloudinary';
 
 // Use Node.js runtime for file system operations
 export const runtime = 'nodejs';
 
+// Configure Cloudinary
+if (process.env.CLOUDINARY_CLOUD_NAME && 
+    process.env.CLOUDINARY_API_KEY && 
+    process.env.CLOUDINARY_API_SECRET) {
+  cloudinary.config({
+    cloud_name: process.env.CLOUDINARY_CLOUD_NAME,
+    api_key: process.env.CLOUDINARY_API_KEY,
+    api_secret: process.env.CLOUDINARY_API_SECRET,
+    secure: true
+  });
+}
+
+// Check if Cloudinary is configured
+const isCloudinaryConfigured = process.env.CLOUDINARY_CLOUD_NAME && 
+                               process.env.CLOUDINARY_API_KEY && 
+                               process.env.CLOUDINARY_API_SECRET;
+
 // Check if Vercel Blob is configured
-const isVercelBlobConfigured = process.env.BLOB_READ_WRITE_TOKEN && process.env.BLOB_READ_WRITE_TOKEN !== "vercel-blob-rw-token-goes-here-for-local-dev";
+const isVercelBlobConfigured = process.env.BLOB_READ_WRITE_TOKEN && 
+                               process.env.BLOB_READ_WRITE_TOKEN !== "vercel-blob-rw-token-goes-here-for-local-dev";
+
+// Maximum video size in MB (from env or default to 100MB)
+const MAX_VIDEO_SIZE_MB = parseInt(process.env.MAX_VIDEO_MB || '100', 10);
+const MAX_VIDEO_SIZE_BYTES = MAX_VIDEO_SIZE_MB * 1024 * 1024;
 
 export async function POST(request: Request) {
   try {
@@ -47,6 +70,71 @@ export async function POST(request: Request) {
           requestedType: fileType
         });
         
+        // Check file size for videos
+        if (fileType === 'video' && file.size > MAX_VIDEO_SIZE_BYTES) {
+          return NextResponse.json({
+            success: false,
+            error: `Video exceeds maximum size of ${MAX_VIDEO_SIZE_MB}MB`
+          }, { status: 400 });
+        }
+
+        // Try to use Cloudinary if configured
+        if (isCloudinaryConfigured) {
+          try {
+            // Convert file to buffer for Cloudinary upload
+            const bytes = await file.arrayBuffer();
+            const buffer = Buffer.from(bytes);
+            
+            // Create a unique filename
+            const timestamp = Date.now();
+            const uniqueId = uuidv4().substring(0, 8);
+            const cloudinaryFileName = `${timestamp}-${uniqueId}${extname(fileName)}`;
+            
+            // Prepare upload folder path
+            const uploadFolder = process.env.CLOUDINARY_UPLOAD_FOLDER || 'soundvibe';
+            const folderPath = fileType === 'video' ? `${uploadFolder}/videos` : `${uploadFolder}/images`;
+            
+            // Upload to Cloudinary
+            const uploadPromise = new Promise((resolve, reject) => {
+              const uploadStream = cloudinary.uploader.upload_stream(
+                {
+                  folder: folderPath,
+                  public_id: cloudinaryFileName.replace(/\.[^/.]+$/, ""), // Remove extension for public_id
+                  resource_type: fileType === 'video' ? 'video' : 'image'
+                },
+                (error, result) => {
+                  if (error) {
+                    console.error("Cloudinary upload error:", error);
+                    reject(error);
+                  } else {
+                    resolve(result);
+                  }
+                }
+              );
+              
+              uploadStream.end(buffer);
+            });
+            
+            const result = await uploadPromise as any;
+            
+            console.log("File uploaded to Cloudinary:", result.secure_url);
+            return NextResponse.json({
+              success: true,
+              file: {
+                url: result.secure_url,
+                type: fileType,
+                name: fileName,
+                public_id: result.public_id,
+                width: result.width,
+                height: result.height
+              },
+            });
+          } catch (cloudinaryError: any) {
+            console.error("Cloudinary upload failed, falling back to alternatives:", cloudinaryError);
+            // Fall back to other upload methods
+          }
+        }
+        
         // Try to use Vercel Blob if configured
         if (isVercelBlobConfigured) {
           try {
@@ -73,7 +161,7 @@ export async function POST(request: Request) {
           }
         }
         
-        // Fall back to file system upload if Vercel Blob is not configured or failed
+        // Fall back to file system upload if other methods are not configured or failed
         return await handleFileSystemUpload(file, fileType, fileName);
       } catch (formError: any) {
         console.error("Error processing form data:", formError);

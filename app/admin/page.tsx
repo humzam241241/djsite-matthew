@@ -7,6 +7,7 @@ import PagesEditor from '../components/PagesEditor';
 import NavigationEditor from '../components/NavigationEditor';
 import Uploader from './_components/Uploader';
 import SectionTitleInput from '../components/SectionTitleInput';
+import { getGalleryItems } from '../lib/utils';
 
 type ContentType = 'services' | 'testimonials' | 'gallery' | 'about' | 'pages' | 'landing' | 'navigation' | 'contact';
 
@@ -146,9 +147,14 @@ export default function AdminPage() {
     <div className="space-y-6">
       <div className="flex justify-between items-center">
         <h1 className="text-3xl font-bold">Admin Dashboard</h1>
-        <Link href="/admin/pages" className="px-4 py-2 rounded-lg bg-blue-100 hover:bg-blue-200 text-blue-800">
-          Page Management
-        </Link>
+        <div className="flex gap-2">
+          <Link href="/admin/pages" className="px-4 py-2 rounded-lg bg-blue-100 hover:bg-blue-200 text-blue-800">
+            Page Management
+          </Link>
+          <Link href="/admin/gallery" className="px-4 py-2 rounded-lg bg-green-100 hover:bg-green-200 text-green-800">
+            Gallery Management
+          </Link>
+        </div>
       </div>
       
       <div className="flex gap-2 border-b pb-2 flex-wrap">
@@ -169,12 +175,6 @@ export default function AdminPage() {
           className={`px-4 py-2 rounded-lg ${activeSection === 'testimonials' ? 'bg-brand-primary text-white' : 'navlink'}`}
         >
           {navigationLabels.testimonials}
-        </button>
-        <button 
-          onClick={() => setActiveSection('gallery')}
-          className={`px-4 py-2 rounded-lg ${activeSection === 'gallery' ? 'bg-brand-primary text-white' : 'navlink'}`}
-        >
-          {navigationLabels.gallery}
         </button>
         <button 
           onClick={() => setActiveSection('about')}
@@ -233,6 +233,18 @@ export default function AdminPage() {
               navigation={content} 
               onChange={handleContentChange} 
             />
+          ) : activeSection === 'gallery' ? (
+            <div className="p-4 bg-yellow-50 border border-yellow-200 rounded-lg">
+              <h3 className="text-lg font-medium text-yellow-800">Gallery Management Updated</h3>
+              <p className="mt-2 text-yellow-700">
+                We've moved gallery management to a dedicated page for better organization and support for both images and videos.
+              </p>
+              <div className="mt-4">
+                <Link href="/admin/gallery" className="px-4 py-2 rounded-lg bg-yellow-600 text-white hover:bg-yellow-700">
+                  Go to Gallery Management
+                </Link>
+              </div>
+            </div>
           ) : (
             <ContentEditor 
               type={activeSection} 
@@ -276,13 +288,6 @@ function ContentEditor({
       return (
         <TestimonialsEditor 
           testimonials={content} 
-          onChange={onChange} 
-        />
-      );
-    case 'gallery':
-      return (
-        <GalleryEditor 
-          gallery={content} 
           onChange={onChange} 
         />
       );
@@ -522,142 +527,6 @@ function TestimonialsEditor({
                 className="w-full border rounded-lg p-2 mt-1"
               />
             </div>
-          </div>
-        </div>
-      ))}
-    </div>
-  );
-}
-
-function GalleryEditor({ 
-  gallery, 
-  onChange 
-}: { 
-  gallery: { items: Array<{ src: string; alt: string }>, sectionTitle?: string }; 
-  onChange: (newContent: any) => void;
-}) {
-  // Initialize section title if not present
-  const [sectionTitle, setSectionTitle] = useState(gallery.sectionTitle || "Gallery");
-
-  function updateGalleryItem(index: number, field: string, value: string) {
-    const newGallery = { ...gallery };
-    newGallery.items[index] = {
-      ...newGallery.items[index],
-      [field]: value
-    };
-    onChange(newGallery);
-  }
-
-  function updateSectionTitle(newTitle: string) {
-    const newGallery = { ...gallery, sectionTitle: newTitle };
-    onChange(newGallery);
-  }
-
-  function addGalleryItem() {
-    const newGallery = gallery ? { ...gallery } : { items: [], sectionTitle };
-    if (!newGallery.items) {
-      newGallery.items = [];
-    }
-    newGallery.items.push({
-      src: "",
-      alt: "New gallery item"
-    });
-    onChange(newGallery);
-  }
-
-  function removeGalleryItem(index: number) {
-    if (!gallery || !gallery.items) return;
-    const newGallery = { ...gallery };
-    newGallery.items.splice(index, 1);
-    onChange(newGallery);
-  }
-
-  function handleImageUploaded(index: number, url: string) {
-    updateGalleryItem(index, "src", url);
-  }
-
-  return (
-    <div className="space-y-4">
-      <div className="card">
-        <h3 className="text-xl font-semibold mb-3">Section Settings</h3>
-        <div>
-          <label className="block text-sm font-medium text-gray-700 mb-1">Section Title</label>
-          <SectionTitleInput
-            sectionId="gallery"
-            initialValue={sectionTitle}
-            onChange={updateSectionTitle}
-          />
-          <p className="text-xs text-gray-500 mt-1">
-            This title will be used in the navigation bar and admin dashboard.
-          </p>
-        </div>
-      </div>
-      
-      <button onClick={addGalleryItem} className="navlink">
-        + Add Gallery Item
-      </button>
-      
-      {gallery && gallery.items && gallery.items.map((item, index) => (
-        <div key={index} className="card">
-          <div className="flex justify-between">
-            <h3 className="text-xl font-semibold">Gallery Item #{index + 1}</h3>
-            <button 
-              onClick={() => removeGalleryItem(index)}
-              className="text-red-600 hover:text-red-800"
-            >
-              Remove
-            </button>
-          </div>
-          
-          <div className="space-y-4 mt-3">
-            {/* Image Upload */}
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">Gallery Image</label>
-              <Uploader
-                label="Upload Gallery Image"
-                accept="image/*"
-                onUploaded={(url) => handleImageUploaded(index, url)}
-              />
-            </div>
-            
-            {/* Manual URL Input (as fallback) */}
-            <div className="mt-4 pt-4 border-t">
-              <label className="block text-sm font-medium text-gray-700">Image Path (Manual Entry)</label>
-              <div className="text-xs text-gray-500 mb-2">
-                You can also enter the image path manually if you prefer.
-              </div>
-              <input
-                type="text"
-                value={item.src}
-                onChange={(e) => updateGalleryItem(index, "src", e.target.value)}
-                className="w-full border rounded-lg p-2"
-                placeholder="/uploads/images/example.jpg"
-              />
-            </div>
-            
-            <div>
-              <label className="block text-sm font-medium text-gray-700">Alt Text</label>
-              <input
-                type="text"
-                value={item.alt}
-                onChange={(e) => updateGalleryItem(index, "alt", e.target.value)}
-                className="w-full border rounded-lg p-2 mt-1"
-                placeholder="Descriptive text for the image"
-              />
-            </div>
-            
-            {item.src && (
-              <div className="mt-2">
-                <p className="text-sm font-medium text-gray-700">Preview:</p>
-                <div className="mt-2 p-2 border rounded-lg bg-gray-50">
-                  <img 
-                    src={item.src} 
-                    alt={item.alt} 
-                    className="max-h-60 mx-auto"
-                  />
-                </div>
-              </div>
-            )}
           </div>
         </div>
       ))}

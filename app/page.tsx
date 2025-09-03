@@ -10,8 +10,12 @@ import ContactForm from "./components/ContactForm";
 import contactContent from "../content/contact.json";
 import MediaGallery, { MediaItem } from "./components/MediaGallery";
 import HeroMediaGallery from "./components/HeroMediaGallery";
+import { getGalleryItems } from "./lib/utils";
 
 export default function HomePage() {
+  // Use the utility function to safely get gallery items
+  const galleryItems = getGalleryItems(gallery);
+
   return (
     <div className="space-y-20">
       {/* Hero Section */}
@@ -48,6 +52,7 @@ export default function HomePage() {
         {/* Content overlay */}
         <div className="container mx-auto px-4 py-20 relative z-10">
           <div className="max-w-xl text-white">
+            <div className="text-2xl md:text-3xl font-display font-bold text-brand-primary mb-2">Sound Vibe</div>
             <h1 className="text-4xl md:text-5xl font-display font-bold mb-4">{landing.hero.title}</h1>
             <p className="text-lg text-white/90 mb-6">
               {landing.hero.subtitle}
@@ -123,8 +128,8 @@ export default function HomePage() {
             {landing.sections.gallery.description}
           </p>
           <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
-            {gallery.items.map((g, i) => (
-              <div key={i} className="card p-0 overflow-hidden">
+            {galleryItems.map((g, i) => (
+              <div key={g.id || i} className="card p-0 overflow-hidden">
                 <img src={g.src} alt={g.alt} className="w-full h-48 object-cover" />
               </div>
             ))}

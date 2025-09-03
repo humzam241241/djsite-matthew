@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import fs from "fs";
 import path from "path";
+import { getGalleryItems } from "@/app/lib/utils";
 
 // Helper function to read content file
 export async function GET(request: NextRequest) {
@@ -49,8 +50,17 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: "Invalid services structure" }, { status: 400 });
     } else if (contentType === "testimonials" && !body.items) {
       return NextResponse.json({ error: "Invalid testimonials structure" }, { status: 400 });
-    } else if (contentType === "gallery" && !body.items) {
-      return NextResponse.json({ error: "Invalid gallery structure" }, { status: 400 });
+    } else if (contentType === "gallery") {
+      // For gallery, we accept both array format (new) and object with items (old)
+      const galleryItems = Array.isArray(body) ? body : body.items;
+      if (!galleryItems) {
+        return NextResponse.json({ error: "Invalid gallery structure" }, { status: 400 });
+      }
+      // If it's the new format (array), write it directly
+      if (Array.isArray(body)) {
+        fs.writeFileSync(filePath, JSON.stringify(body, null, 2));
+        return NextResponse.json({ success: true });
+      }
     } else if (contentType === "about" && (!body.blurb || !body.referrals)) {
       return NextResponse.json({ error: "Invalid about structure" }, { status: 400 });
     } else if (contentType === "landing" && (!body.hero || !body.sections)) {
